@@ -6,6 +6,12 @@
     <title>Cricket Score Admin - Mobile Panel</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        .flex-1 { flex: 1; }
+        .top-strip-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
         :root {
             --primary: #1e3a8a;
@@ -399,7 +405,6 @@
             background: linear-gradient(135deg, var(--danger) 0%, #ef4444 100%) !important;
             padding: 8px 12px;
             font-size: 12px;
-            min-height: auto;
             white-space: nowrap;
             margin-top: 8px;
             box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
@@ -436,11 +441,11 @@
 
     <div class="page" id="adminPage">
         <div class="top-strip">
-            <div style="flex: 1;">
+            <div class="flex-1">
                 <div class="top-title">🏏 Live Score Admin</div>
                 <div class="top-sub">Update overlay instantly (no refresh)</div>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="top-strip-actions">
                 <div class="live-badge">● LIVE LINKED</div>
                 <button class="logout-btn" onclick="logout()">🚪 Logout</button>
             </div>
