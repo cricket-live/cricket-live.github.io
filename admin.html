@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Score Admin - Mobile Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --primary-dark: #0f172a;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+            min-height: 100vh;
+            padding: 12px;
+            overflow: auto;
+            color: var(--gray-800);
+        }
+
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-box h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .login-box p {
+            color: var(--gray-600);
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+            background: var(--gray-50);
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);
+        }
+
+        .login-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+        }
+
+        .login-error {
+            color: var(--danger);
+            font-size: 14px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+        .page {
+            display: none;
+        }
+        .page.unlocked {
+            display: flex;
+        }
+        .page {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: calc(100vh - 24px);
+            height: auto;
+        }
+
+        .top-strip {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            box-shadow: 0 10px 25px rgba(30, 58, 138, 0.15);
+        }
+
+        .top-title { 
+            font-size: 18px; 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+        }
+
+        .top-sub { 
+            font-size: 13px; 
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        .live-badge {
+            padding: 8px 14px;
+            font-size: 12px;
+            background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
+            color: white;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.2);
+            white-space: nowrap;
+        }
+
+        .page-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            overflow: visible;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+            border: 1px solid var(--gray-100);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            border-color: var(--primary-light);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-row { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+        }
+
+        .input-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+        }
+
+        label { 
+            font-size: 12px; 
+            color: var(--gray-700); 
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .file-note { 
+            font-size: 11px; 
+            color: var(--gray-600); 
+            margin-top: -2px;
+            font-style: italic;
+        }
+
+        input[type="text"], 
+        input[type="number"], 
+        select, 
+        input[type="file"] {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: var(--gray-50);
+            font-family: inherit;
+        }
+        input:focus, select:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+            min-height: 42px;
+            touch-action: manipulation;
+        }
+
+        button:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.25);
+        }
+
+        button:active { 
+            transform: translateY(0);
+        }
+
+        .quick-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 8px; 
+        }
+
+        .quick-btn { 
+            padding: 10px; 
+            font-size: 13px; 
+            min-height: 42px;
+        }
+
+        .quick-btn.runs { 
+            background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+        }
+
+        .quick-btn.wicket { 
+            background: linear-gradient(135deg, var(--danger) 0%, #ef4444 100%);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+        }
+
+        .quick-btn.swap { 
+            background: linear-gradient(135deg, var(--warning) 0%, #f59e0b 100%); 
+            grid-column: 1 / -1;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.15);
+        }
+
+        .label-striker { 
+            margin-bottom: 4px; 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--success); 
+            font-weight: 700;
+        }
+
+        .label-nonstriker { 
+            margin: 10px 0 6px 0; 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gray-700); 
+            font-weight: 700;
+        }
+
+        .striker-badge {
+            background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+        }
+
+        .nonstriker-badge {
+            background: var(--gray-300);
+            color: var(--gray-800);
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .swap-between {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .swap-between button {
+            background: linear-gradient(135deg, var(--warning) 0%, #f59e0b 100%);
+            padding: 10px 16px;
+            font-size: 13px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.15);
+        }
+
+        .swap-between button:hover {
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.25);
+        }
+
+        .swap-margin { margin-top: 8px; }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .status.success { 
+            background: #d1fae5; 
+            color: #065f46; 
+            display: block;
+            border-left: 4px solid var(--success);
+        }
+
+        .status.error { 
+            background: #fee2e2; 
+            color: #991b1b; 
+            display: block;
+            border-left: 4px solid var(--danger);
+        }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(-10px); } 
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, var(--danger) 0%, #ef4444 100%) !important;
+            padding: 8px 12px;
+            font-size: 12px;
+            min-height: auto;
+            white-space: nowrap;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+        }
+
+        .logout-btn:hover {
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.25) !important;
+        }
+
+        /* Compact, no-scroll intent on typical desktop */
+        @media (max-width: 1024px) {
+            .page { height: auto; }
+            .page-grid { grid-template-columns: 1fr; overflow: visible; }
+            body { overflow: auto; }
+        }
+        @media (max-width: 600px) {
+            .input-row { grid-template-columns: 1fr; }
+            .quick-grid { grid-template-columns: 1fr; }
+            .top-strip { flex-direction: column; align-items: flex-start; gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-overlay" id="loginScreen">
+        <div class="login-box">
+            <h2>🔒 Admin Login</h2>
+            <p>Enter PIN to access admin panel</p>
+            <input type="password" id="pinInput" placeholder="Enter PIN" maxlength="6" inputmode="numeric">
+            <button onclick="checkPin()">Unlock</button>
+            <div class="login-error" id="loginError">❌ Incorrect PIN. Try again.</div>
+        </div>
+    </div>
+
+    <div class="page" id="adminPage">
+        <div class="top-strip">
+            <div style="flex: 1;">
+                <div class="top-title">🏏 Live Score Admin</div>
+                <div class="top-sub">Update overlay instantly (no refresh)</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="live-badge">● LIVE LINKED</div>
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <div class="page-grid">
+            <div class="card">
+                <div class="card-title">📋 Match Info</div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Team A Name</label>
+                        <input type="text" id="teamAInput" placeholder="Team A" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Team B Name</label>
+                        <input type="text" id="teamBInput" placeholder="Team B" required>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Team A Logo (optional)</label>
+                        <input type="file" id="logoAFile" accept="image/*" title="Upload Team A logo image">
+                        <div class="file-note">Upload (HTTPS only) or paste URL</div>
+                        <input type="text" id="logoAInput" placeholder="https://...">
+                    </div>
+                    <div class="input-group">
+                        <label>Team B Logo (optional)</label>
+                        <input type="file" id="logoBFile" accept="image/*" title="Upload Team B logo image">
+                        <div class="file-note">Upload (HTTPS only) or paste URL</div>
+                        <input type="text" id="logoBInput" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Currently Batting</label>
+                    <select id="battingTeam" title="Select batting team" aria-label="Select batting team">
+                        <option value="TEAM A">Team A</option>
+                        <option value="TEAM B">Team B</option>
+                    </select>
+                </div>
+                <button onclick="updateMatchInfo()">Update Match Info</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 Score</div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Total Runs</label>
+                        <input type="number" id="runsInput" placeholder="0" min="0" step="1">
+                    </div>
+                    <div class="input-group">
+                        <label>Wickets</label>
+                        <input type="number" id="wicketsInput" placeholder="0" min="0" max="10" step="1">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Overs (e.g., 10.2)</label>
+                    <input type="text" id="oversInput" placeholder="0.0" inputmode="decimal" pattern="^\d{1,2}(\.\d)?$" title="Format: 10.2">
+                </div>
+                <button onclick="updateScore()">Update Score</button>
+                <div class="quick-grid">
+                    <button class="quick-btn runs" onclick="addRuns(1)">+1 Run</button>
+                    <button class="quick-btn runs" onclick="addRuns(4)">+4 Runs</button>
+                    <button class="quick-btn runs" onclick="addRuns(6)">+6 Runs</button>
+                    <button class="quick-btn wicket" onclick="addWicket()">+1 Wicket</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🏏 Batsmen</div>
+                <label class="label-striker">
+                    <span>★ Striker</span>
+                    <span class="striker-badge">● PLAYING</span>
+                </label>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Name</label>
+                        <input type="text" id="strikerName" placeholder="Player 1" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>Runs</label>
+                        <input type="number" id="strikerRuns" placeholder="0" min="0" step="1">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Balls Faced</label>
+                    <input type="number" id="strikerBalls" placeholder="0" min="0" step="1">
+                </div>
+
+                <div class="swap-between">
+                    <button onclick="swapBatsmen()">🔄 Change Striker</button>
+                </div>
+
+                <label class="label-nonstriker">
+                    <span>Non-Striker</span>
+                    <span class="nonstriker-badge">WAITING</span>
+                </label>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Name</label>
+                        <input type="text" id="nonStrikerName" placeholder="Player 2" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>Runs</label>
+                        <input type="number" id="nonStrikerRuns" placeholder="0" min="0" step="1">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Balls Faced</label>
+                    <input type="number" id="nonStrikerBalls" placeholder="0" min="0" step="1">
+                </div>
+
+                <button onclick="updateBatsmen()">Update Batsmen</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚡ Bowler</div>
+                <div class="input-group">
+                    <label>Bowler Name</label>
+                    <input type="text" id="bowlerName" placeholder="Bowler 1" autocomplete="off">
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Overs</label>
+                        <input type="text" id="bowlerOvers" placeholder="0.0" inputmode="decimal" pattern="^\d{1,2}(\.\d)?$" title="Format: 3.4">
+                    </div>
+                    <div class="input-group">
+                        <label>Runs Conceded</label>
+                        <input type="number" id="bowlerRuns" placeholder="0" min="0" step="1">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Wickets Taken</label>
+                    <input type="number" id="bowlerWickets" placeholder="0" min="0" max="10" step="1">
+                </div>
+                <button onclick="updateBowler()">Update Bowler</button>
+            </div>
+        </div>
+
+        <div id="statusMessage" class="status"></div>
+    </div>
+
+    <!-- Firebase SDK v12+ (Modular) -->
+    <script type="module">
+        // ===== PIN PROTECTION =====
+        const ADMIN_PIN = '223263';
+        
+        // Check if already logged in this session
+        if (sessionStorage.getItem('adminUnlocked') === 'true') {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminPage').classList.add('unlocked');
+        }
+
+        window.checkPin = function() {
+            const input = document.getElementById('pinInput');
+            const error = document.getElementById('loginError');
+            
+            if (input.value === ADMIN_PIN) {
+                sessionStorage.setItem('adminUnlocked', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPage').classList.add('unlocked');
+                input.value = '';
+            } else {
+                error.classList.add('show');
+                input.value = '';
+                input.focus();
+                setTimeout(() => error.classList.remove('show'), 3000);
+            }
+        };
+
+        // ===== LOGOUT FUNCTION =====
+        window.logout = function() {
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.removeItem('adminUnlocked');
+                document.getElementById('adminPage').classList.remove('unlocked');
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('pinInput').value = '';
+                document.getElementById('pinInput').focus();
+            }
+        };
+
+        // Allow Enter key to submit
+        document.getElementById('pinInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkPin();
+        });
+
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+        import { getDatabase, ref, update, get } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js';
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js';
+
+        // ============================================
+        // FIREBASE CONFIG
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgS_M3ag8piR9Osui5zc3t0xMM_0HMZSI",
+            authDomain: "cricket-2790a.firebaseapp.com",
+            databaseURL: "https://cricket-2790a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "cricket-2790a",
+            storageBucket: "cricket-2790a.appspot.com",
+            messagingSenderId: "145576359225",
+            appId: "1:145576359225:web:4bc43bb21a0c1d44d364e8",
+            measurementId: "G-VHYQQN441W"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const matchRef = ref(database, 'match');
+        const storage = getStorage(app);
+        const allowUploads = window.location.protocol === 'https:';
+
+        // ===== LOAD CURRENT DATA ON PAGE LOAD =====
+        window.addEventListener('load', async () => {
+            try {
+                const snapshot = await get(matchRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    
+                    // Fill match info
+                    document.getElementById('teamAInput').value = data.teamA || '';
+                    document.getElementById('teamBInput').value = data.teamB || '';
+                    document.getElementById('logoAInput').value = data.logos?.teamA || '';
+                    document.getElementById('logoBInput').value = data.logos?.teamB || '';
+                    document.getElementById('battingTeam').value = data.batting || 'TEAM A';
+                    
+                    // Fill score
+                    document.getElementById('runsInput').value = data.score?.runs || 0;
+                    document.getElementById('wicketsInput').value = data.score?.wickets || 0;
+                    document.getElementById('oversInput').value = data.score?.overs || '0.0';
+                    
+                    // Fill batsmen
+                    document.getElementById('strikerName').value = data.batsmen?.striker?.name || '';
+                    document.getElementById('strikerRuns').value = data.batsmen?.striker?.runs || 0;
+                    document.getElementById('strikerBalls').value = data.batsmen?.striker?.balls || 0;
+                    document.getElementById('nonStrikerName').value = data.batsmen?.nonStriker?.name || '';
+                    document.getElementById('nonStrikerRuns').value = data.batsmen?.nonStriker?.runs || 0;
+                    document.getElementById('nonStrikerBalls').value = data.batsmen?.nonStriker?.balls || 0;
+                    
+                    // Fill bowler
+                    document.getElementById('bowlerName').value = data.bowler?.name || '';
+                    document.getElementById('bowlerOvers').value = data.bowler?.overs || '0.0';
+                    document.getElementById('bowlerRuns').value = data.bowler?.runs || 0;
+                    document.getElementById('bowlerWickets').value = data.bowler?.wickets || 0;
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        });
+
+        // ===== HELPER FUNCTION: SHOW STATUS =====
+        function showStatus(message, isSuccess = true) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + (isSuccess ? 'success' : 'error');
+            
+            setTimeout(() => {
+                statusEl.className = 'status';
+            }, 3000);
+        }
+
+        async function uploadLogoIfAny(inputId, path) {
+            if (!allowUploads) {
+                console.warn('Logo upload skipped: use HTTPS to upload logos.');
+                return null;
+            }
+            try {
+                const fileEl = document.getElementById(inputId);
+                if (!fileEl || !fileEl.files || !fileEl.files[0]) return null;
+
+                const file = fileEl.files[0];
+                const fileRef = storageRef(storage, path);
+                await uploadBytes(fileRef, file);
+                return getDownloadURL(fileRef);
+            } catch (err) {
+                console.warn('Logo upload skipped:', err?.message || err);
+                return null; // continue without blocking update
+            }
+        }
+
+        // ===== UPDATE MATCH INFO =====
+        window.updateMatchInfo = async function() {
+            const teamA = document.getElementById('teamAInput').value.trim();
+            const teamB = document.getElementById('teamBInput').value.trim();
+            const logoAUrl = document.getElementById('logoAInput').value.trim();
+            const logoBUrl = document.getElementById('logoBInput').value.trim();
+            const batting = document.getElementById('battingTeam').value;
+
+            if (!teamA || !teamB) {
+                showStatus('Please enter both team names', false);
+                return;
+            }
+
+            try {
+                // Prefer uploaded files; fall back to URL; then placeholder
+                const [uploadedA, uploadedB] = await Promise.all([
+                    uploadLogoIfAny('logoAFile', 'logos/teamA.png'),
+                    uploadLogoIfAny('logoBFile', 'logos/teamB.png')
+                ]);
+
+                // Optional logos: if nothing provided, leave empty
+                const finalLogoA = uploadedA || logoAUrl || '';
+                const finalLogoB = uploadedB || logoBUrl || '';
+
+                await update(matchRef, {
+                    teamA: teamA,
+                    teamB: teamB,
+                    batting: batting,
+                    'logos/teamA': finalLogoA,
+                    'logos/teamB': finalLogoB
+                });
+                showStatus('✅ Match info updated!');
+            } catch (error) {
+                console.error('Match info update failed:', error);
+                showStatus('❌ Could not save match info. Check console/logs.', false);
+            }
+        };
+
+        // ===== UPDATE SCORE =====
+        window.updateScore = async function() {
+            const runs = parseInt(document.getElementById('runsInput').value) || 0;
+            const wickets = parseInt(document.getElementById('wicketsInput').value) || 0;
+            const overs = document.getElementById('oversInput').value.trim() || '0.0';
+
+            // Validate wickets (max 10)
+            if (wickets > 10) {
+                showStatus('❌ Wickets cannot exceed 10!', false);
+                return;
+            }
+
+            // Validate overs format (X.0 to X.6 only, e.g., 10.2, 5.4, 0.3)
+            const oversRegex = /^\d+\.[0-6]$/;
+            if (!oversRegex.test(overs)) {
+                showStatus('❌ Overs format invalid! Use X.Y where Y is 0-6 (e.g., 10.2, 5.4)', false);
+                return;
+            }
+
+            try {
+                await update(matchRef, {
+                    'score/runs': runs,
+                    'score/wickets': wickets,
+                    'score/overs': overs
+                });
+                showStatus('✅ Score updated!');
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, false);
+            }
+        };
+
+        // ===== UPDATE BATSMEN =====
+        window.updateBatsmen = async function() {
+            const strikerName = document.getElementById('strikerName').value.trim();
+            const strikerRuns = parseInt(document.getElementById('strikerRuns').value) || 0;
+            const strikerBalls = parseInt(document.getElementById('strikerBalls').value) || 0;
+            
+            const nonStrikerName = document.getElementById('nonStrikerName').value.trim();
+            const nonStrikerRuns = parseInt(document.getElementById('nonStrikerRuns').value) || 0;
+            const nonStrikerBalls = parseInt(document.getElementById('nonStrikerBalls').value) || 0;
+
+            // Validate striker data
+            if (strikerRuns < 0) {
+                showStatus('❌ Striker runs cannot be negative!', false);
+                return;
+            }
+            if (strikerBalls < 0) {
+                showStatus('❌ Striker balls cannot be negative!', false);
+                return;
+            }
+            if (strikerBalls > 0 && strikerRuns > strikerBalls * 6) {
+                showStatus('❌ Striker runs cannot exceed balls faced × 6!', false);
+                return;
+            }
+
+            // Validate non-striker data
+            if (nonStrikerRuns < 0) {
+                showStatus('❌ Non-striker runs cannot be negative!', false);
+                return;
+            }
+            if (nonStrikerBalls < 0) {
+                showStatus('❌ Non-striker balls cannot be negative!', false);
+                return;
+            }
+            if (nonStrikerBalls > 0 && nonStrikerRuns > nonStrikerBalls * 6) {
+                showStatus('❌ Non-striker runs cannot exceed balls faced × 6!', false);
+                return;
+            }
+
+            try {
+                await update(matchRef, {
+                    'batsmen/striker/name': strikerName || 'Player 1',
+                    'batsmen/striker/runs': strikerRuns,
+                    'batsmen/striker/balls': strikerBalls,
+                    'batsmen/nonStriker/name': nonStrikerName || 'Player 2',
+                    'batsmen/nonStriker/runs': nonStrikerRuns,
+                    'batsmen/nonStriker/balls': nonStrikerBalls
+                });
+                showStatus('✅ Batsmen updated! Ready for next player.');
+                // Auto-clear form for next entry
+                setTimeout(() => {
+                    document.getElementById('strikerName').value = '';
+                    document.getElementById('strikerRuns').value = '';
+                    document.getElementById('strikerBalls').value = '';
+                    document.getElementById('nonStrikerName').value = '';
+                    document.getElementById('nonStrikerRuns').value = '';
+                    document.getElementById('nonStrikerBalls').value = '';
+                    document.getElementById('strikerName').focus();
+                }, 1500);
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, false);
+            }
+        };
+
+        // ===== SWAP BATSMEN =====
+        window.swapBatsmen = async function() {
+            try {
+                const snapshot = await get(matchRef);
+                const data = snapshot.val();
+                
+                const striker = data.batsmen?.striker || {};
+                const nonStriker = data.batsmen?.nonStriker || {};
+
+                await update(matchRef, {
+                    'batsmen/striker': nonStriker,
+                    'batsmen/nonStriker': striker
+                });
+
+                // Update UI
+                document.getElementById('strikerName').value = nonStriker.name || '';
+                document.getElementById('strikerRuns').value = nonStriker.runs || 0;
+                document.getElementById('strikerBalls').value = nonStriker.balls || 0;
+                document.getElementById('nonStrikerName').value = striker.name || '';
+                document.getElementById('nonStrikerRuns').value = striker.runs || 0;
+                document.getElementById('nonStrikerBalls').value = striker.balls || 0;
+
+                showStatus('✅ Batsmen swapped!');
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, false);
+            }
+        };
+
+        // ===== UPDATE BOWLER =====
+        window.updateBowler = async function() {
+            const name = document.getElementById('bowlerName').value.trim();
+            const overs = document.getElementById('bowlerOvers').value.trim() || '0.0';
+            const runs = parseInt(document.getElementById('bowlerRuns').value) || 0;
+            const wickets = parseInt(document.getElementById('bowlerWickets').value) || 0;
+
+            // Validate runs (cannot be negative)
+            if (runs < 0) {
+                showStatus('❌ Runs conceded cannot be negative!', false);
+                return;
+            }
+
+            // Validate wickets (max 10)
+            if (wickets > 10) {
+                showStatus('❌ Wickets cannot exceed 10!', false);
+                return;
+            }
+            if (wickets < 0) {
+                showStatus('❌ Wickets cannot be negative!', false);
+                return;
+            }
+
+            // Validate overs format (X.0 to X.6 only, e.g., 10.2, 5.4, 0.3)
+            const oversRegex = /^\d+\.[0-6]$/;
+            if (!oversRegex.test(overs)) {
+                showStatus('❌ Overs format invalid! Use X.Y where Y is 0-6 (e.g., 10.2, 5.4)', false);
+                return;
+            }
+
+            try {
+                await update(matchRef, {
+                    'bowler/name': name || 'Bowler 1',
+                    'bowler/overs': overs,
+                    'bowler/runs': runs,
+                    'bowler/wickets': wickets
+                });
+                showStatus('✅ Bowler updated! Ready for next player.');
+                // Auto-clear form for next entry
+                setTimeout(() => {
+                    document.getElementById('bowlerName').value = '';
+                    document.getElementById('bowlerOvers').value = '';
+                    document.getElementById('bowlerRuns').value = '';
+                    document.getElementById('bowlerWickets').value = '';
+                    document.getElementById('bowlerName').focus();
+                }, 1500);
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, false);
+            }
+        };
+
+        // ===== QUICK ACTIONS =====
+        window.addRuns = async function(runs) {
+            try {
+                const snapshot = await get(matchRef);
+                const data = snapshot.val();
+                
+                const currentRuns = data.score?.runs || 0;
+                const newRuns = currentRuns + runs;
+                
+                await update(matchRef, { 'score/runs': newRuns });
+                document.getElementById('runsInput').value = newRuns;
+                showStatus(`✅ Added ${runs} run(s)!`);
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, false);
+            }
+        };
+
+        window.addWicket = async function() {
+            try {
+                const snapshot = await get(matchRef);
+                const data = snapshot.val();
+                
+                const currentWickets = data.score?.wickets || 0;
+                const newWickets = currentWickets + 1;
+
+                // Validate wickets (max 10)
+                if (newWickets > 10) {
+                    showStatus('❌ Cannot exceed 10 wickets!', false);
+                    return;
+                }
+                
+                await update(matchRef, { 'score/wickets': newWickets });
+                document.getElementById('wicketsInput').value = newWickets;
+                showStatus('✅ Wicket added!');
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, false);
+            }
+        };
+
+        console.log('✅ Admin panel connected to Firebase');
+    </script>
+</body>
+</html>

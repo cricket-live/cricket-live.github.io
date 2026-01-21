@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Cricket Score - YouTube Overlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Main Container - Fixed Position for YouTube */
+        .overlay-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 450px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(2, 44, 34, 0.98) 100%);
+            border-radius: 14px;
+            padding: 18px 22px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(5, 150, 105, 0.4);
+            z-index: 9999;
+        }
+
+        /* Header */
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 16px;
+        }
+
+        .batting-info,
+        .bowling-info {
+            min-width: 0;
+        }
+
+        .center-score {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 2px solid rgba(5, 150, 105, 0.3);
+            border-right: 2px solid rgba(5, 150, 105, 0.3);
+            padding: 0 12px;
+        }
+
+        .section-title {
+            color: #10b981;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .batting-team-center {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .score-center {
+            font-size: 42px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .overs-center {
+            font-size: 13px;
+            color: #10b981;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .crr-center {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .crr-value-text {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .vs-tag {
+            font-size: 11px;
+            color: #10b981;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .live-wrapper {
+            margin-top: 6px;
+        }
+
+        .live-badge {
+            background: #ef4444;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+            display: inline-block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .batsman-row {
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .batsman-name {
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .striker-indicator {
+            color: #10b981;
+            font-size: 12px;
+        }
+
+        .striker-hidden {
+            opacity: 0;
+            width: 0;
+            margin: 0;
+        }
+
+        .batsman-stats {
+            font-size: 10px;
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .bowler-info-text {
+            color: #fff;
+        }
+
+        .bowler-name {
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .bowler-stats {
+            font-size: 10px;
+            color: #ef4444;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1280px) {
+            .overlay-container {
+                width: 420px;
+                padding: 16px 18px;
+                bottom: 15px;
+                right: 15px;
+            }
+            .score-center {
+                font-size: 38px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .overlay-container {
+                width: 380px;
+                padding: 14px 16px;
+            }
+            .bottom-section {
+                gap: 12px;
+            }
+            .score-center {
+                font-size: 36px;
+            }
+            .section-title {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .overlay-container {
+                width: 90vw;
+                max-width: 360px;
+                bottom: 10px;
+                right: 10px;
+                padding: 12px 14px;
+            }
+            .bottom-section {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .center-score {
+                border: none;
+                border-top: 2px solid rgba(5, 150, 105, 0.3);
+                border-bottom: 2px solid rgba(5, 150, 105, 0.3);
+                padding: 10px 0;
+            }
+            .batting-info,
+            .bowling-info {
+                text-align: center;
+            }
+            .score-center {
+                font-size: 32px;
+            }
+            .section-title {
+                font-size: 9px;
+            }
+            .batsman-row {
+                margin-bottom: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .overlay-container {
+                width: 95vw;
+                bottom: 8px;
+                right: 8px;
+                padding: 10px 12px;
+                border-radius: 10px;
+            }
+            .bottom-section {
+                gap: 8px;
+            }
+            .score-center {
+                font-size: 28px;
+                padding: 8px 0;
+            }
+            .section-title {
+                font-size: 8px;
+                margin-bottom: 4px;
+            }
+            .batsman-name,
+            .bowler-name {
+                font-size: 10px;
+            }
+            .batsman-stats,
+            .bowler-stats {
+                font-size: 9px;
+            }
+            .overs-center {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay-container">
+                
+                <!-- BOTTOM SECTION - Player Info Bar -->
+                <div class="bottom-section">
+                    
+                    <!-- LEFT - Batting Info -->
+                    <div class="batting-info">
+                        <div class="section-title" id="battingTeamTitle">TEAM A - BATTING</div>
+                        
+                        <!-- Striker -->
+                        <div class="batsman-row">
+                            <div class="batsman-name">
+                                <span class="striker-indicator" id="striker1">★</span>
+                                <span id="strikerName">Player 1</span>
+                            </div>
+                            <div class="batsman-stats">
+                                <span id="strikerRuns">0</span> (<span id="strikerBalls">0</span>)
+                            </div>
+                        </div>
+
+                        <!-- Non-Striker -->
+                        <div class="batsman-row">
+                            <div class="batsman-name">
+                                <span class="striker-indicator striker-hidden" id="striker2">★</span>
+                                <span id="nonStrikerName">Player 2</span>
+                            </div>
+                            <div class="batsman-stats">
+                                <span id="nonStrikerRuns">0</span> (<span id="nonStrikerBalls">0</span>)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CENTER - Score Section -->
+                    <div class="center-score">
+                        <div class="vs-tag">VS</div>
+                        <div id="battingTeam" class="batting-team-center">TEAM A BATTING</div>
+                        <div id="scoreDisplay" class="score-center">0/0</div>
+                        <div id="oversDisplay" class="overs-center">Overs: 0.0</div>
+                        <div class="crr-center">
+                            <span class="crr-label">CRR: </span>
+                            <span id="crrValue" class="crr-value-text">0.00</span>
+                        </div>
+                        <div class="live-wrapper">
+                            <div class="live-badge live-inline">● LIVE</div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT - Bowling Info -->
+                    <div class="bowling-info">
+                        <div class="section-title" id="bowlingTeamTitle">TEAM B - BOWLING</div>
+                        <div class="bowler-info-text">
+                            <div id="bowlerName" class="bowler-name">Bowler 1</div>
+                            <div class="bowler-stats">
+                                <div><span id="bowlerOvers">0.0</span> Overs</div>
+                                <div><span id="bowlerRuns">0</span> Runs</div>
+                                <div><span id="bowlerWickets">0</span> Wickets</div>
+                            </div>
+                        </div>
+                    </div>
+
+        </div>
+    </div>
+
+    <!-- Firebase SDK v12+ (Modular) -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js';
+
+        // ============================================
+        // FIREBASE CONFIG
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgS_M3ag8piR9Osui5zc3t0xMM_0HMZSI",
+            authDomain: "cricket-2790a.firebaseapp.com",
+            databaseURL: "https://cricket-2790a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "cricket-2790a",
+            storageBucket: "cricket-2790a.appspot.com",
+            messagingSenderId: "145576359225",
+            appId: "1:145576359225:web:4bc43bb21a0c1d44d364e8",
+            measurementId: "G-VHYQQN441W"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Reference to the match data in database
+        const matchRef = ref(database, 'match');
+
+        // Calculate Current Run Rate
+        function calculateCRR(runs, overs) {
+            const oversFloat = parseFloat(overs) || 0;
+            if (oversFloat === 0) return "0.00";
+            
+            // Convert overs to total balls (e.g., 10.2 = 10 overs + 2 balls = 62 balls)
+            const wholeOvers = Math.floor(oversFloat);
+            const balls = Math.round((oversFloat - wholeOvers) * 10);
+            const totalBalls = (wholeOvers * 6) + balls;
+            const totalOvers = totalBalls / 6;
+            
+            const crr = runs / totalOvers;
+            return crr.toFixed(2);
+        }
+
+        // Listen for real-time updates from Firebase
+        // This triggers instantly when data changes
+        onValue(matchRef, (snapshot) => {
+            if (!snapshot.exists()) {
+                return;
+            }
+
+            const data = snapshot.val();
+
+            // Team mapping: batting flag (TEAM A/TEAM B) -> actual names
+            const teamA = data.teamA || 'TEAM A';
+            const teamB = data.teamB || 'TEAM B';
+            const battingFlag = (data.batting || 'TEAM A').toUpperCase();
+            const battingTeam = battingFlag === 'TEAM B' ? teamB : teamA;
+            const bowlingTeam = battingTeam === teamA ? teamB : teamA;
+
+            // Update section titles with team names
+            document.getElementById('battingTeamTitle').textContent = `${battingTeam.toUpperCase()} - BATTING`;
+            document.getElementById('bowlingTeamTitle').textContent = `${bowlingTeam.toUpperCase()} - BOWLING`;
+
+            // Update batting team indicator
+            document.getElementById('battingTeam').textContent = `${battingTeam.toUpperCase()} BATTING`;
+
+            // Update main score
+            const runs = data.score?.runs || 0;
+            const wickets = data.score?.wickets || 0;
+            const overs = data.score?.overs || '0.0';
+
+            document.getElementById('scoreDisplay').textContent = `${runs}/${wickets}`;
+            document.getElementById('oversDisplay').textContent = `Overs: ${overs}`;
+
+            // Update striker batsman
+            const striker = data.batsmen?.striker || {};
+            document.getElementById('strikerName').textContent = striker.name || 'Player 1';
+            document.getElementById('strikerRuns').textContent = striker.runs || 0;
+            document.getElementById('strikerBalls').textContent = striker.balls || 0;
+
+            // Update non-striker batsman
+            const nonStriker = data.batsmen?.nonStriker || {};
+            document.getElementById('nonStrikerName').textContent = nonStriker.name || 'Player 2';
+            document.getElementById('nonStrikerRuns').textContent = nonStriker.runs || 0;
+            document.getElementById('nonStrikerBalls').textContent = nonStriker.balls || 0;
+
+            // Update bowler
+            const bowler = data.bowler || {};
+            document.getElementById('bowlerName').textContent = bowler.name || 'Bowler 1';
+            document.getElementById('bowlerOvers').textContent = bowler.overs || '0.0';
+            document.getElementById('bowlerRuns').textContent = bowler.runs || 0;
+            document.getElementById('bowlerWickets').textContent = bowler.wickets || 0;
+
+            // Calculate and update CRR
+            const crr = calculateCRR(runs, overs);
+            document.getElementById('crrValue').textContent = crr;
+        });
+
+        console.log('✅ OBS Overlay connected to Firebase - Real-time updates active');
+    </script>
+</body>
+</html>
